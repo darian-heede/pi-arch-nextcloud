@@ -4,6 +4,8 @@ Nextcloud configuration for the raspberry pi 3 B (+) using docker nginx-fpm and 
 
 ## Troubleshooting
 
+### SSL encryption
+
 `jrcs/letsencrypt-nginx-proxy-companion` is not availabe for arm architecture. `alexanderkrause/rpi-letsencrypt-nginx-proxy-companion` does not support ACMEv2 (as of yet). Fallback is to use certbot on server and linking the certificates as volume for proxy container.
 
 ```bash
@@ -30,3 +32,23 @@ Generate Diffie-Hellman parameter file
 sudo openssl dhparam -dsaparam -out /etc/nginx/dhparam/dhparam.pem 4096
 ```
 
+### Connect to nextcloud-client on desktop
+
+Granting access send token to `http` endpoint rather than `https` per default, resulting in access not being granted. To fix this, the `config/config.php` file must be edited on the `nextcloud-app` container:
+
+```bash
+sudo docker exec -it nextcloud-app /bin/sh
+vi config/config.php
+```
+
+Add the following lines to the `config.php`:
+
+```bash
+[...]
+'overwrite.cli.url' => 'https://<your-nextcloud.domain>',
+'overwritehost' => '<your-nextcloud.domain>',
+'overwriteprotocol' => 'https'
+[...]
+```
+
+After doing this, the client can have access granted.
