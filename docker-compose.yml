@@ -1,0 +1,81 @@
+version: '3'
+
+services:
+
+  db:
+    image: postgres:alpine
+    container_name: nextcloud-database
+    networks:
+      - nextcloud_network
+    volumes:
+      - db:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - db.env
+    restart: always
+
+  app:
+    image: nextcloud:fpm-alpine
+    container_name: nextcloud-app
+    depends_on:
+      - db
+    volumes:
+      - nextcloud:/var/www/html
+      - /ext/nextcloud/www/html/data:/var/www/html/data:rw
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - nextcloud_network
+    env_file:
+      - .env
+      - db.env
+    restart: always
+
+  proxy:
+    build: ./proxy
+    container_name: nextcloud-proxy
+    #labels:
+    #  com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "false"
+    networks:
+      - nextcloud_network
+    ports:
+      - 80:443
+      - 443:443
+    environment:
+      - DHPARAM_GENERATION=false
+      - DHPARAM_BITS=2048
+    volumes:
+      - /etc/letsencrypt/live/${HOST}/fullchain.pem:/etc/nginx/certs/${HOST}.fullchain.pem:ro
+      - /etc/letsencrypt/live/${HOST}/chain.pem:/etc/nginx/certs/${HOST}.chain.pem:ro
+      - /etc/letsencrypt/live/${HOST}/cert.pem:/etc/nginx/certs/${HOST}.crt:ro
+      - /etc/letsencrypt/live/${HOST}/privkey.pem:/etc/nginx/certs/${HOST}.key:ro
+      - /etc/nginx/dhparam/dhparam.pem:/etc/nginx/certs/${HOST}.dhparam.pem:ro
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+
+  web:
+    build: ./web
+    container_name: nextcloud-web
+    networks:
+      - nextcloud_network
+      - default
+    depends_on:
+      - app
+    volumes:
+      - nextcloud:/var/www/html:ro
+      - /ext/nextcloud/www/html/data:/var/www/html/data:ro
+    env_file:
+      - app.env
+    restart: always
+
+
+volumes:
+  db:
+  nextcloud:
+  vhost.d:
+  html:
+
+networks:
+  nextcloud_network:
