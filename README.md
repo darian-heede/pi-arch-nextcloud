@@ -1,4 +1,4 @@
-# rpi-nextcloud
+# pi-arch-nextcloud
 
 Nextcloud configuration for the raspberry pi 3 B (+) using docker nginx-fpm and local letsencrypt certbot.
 
