@@ -4,6 +4,8 @@ Nextcloud configuration for the raspberry pi 3 B (+) using docker nginx-fpm and 
 
 ## Environment files
 
+Environment files need to be placed in root folder.
+
 ### `.env`
 ```bash
 POSTGRES_DB=postgres
@@ -12,14 +14,14 @@ POSTGRES_PASSWORD=<postgres-pwd>
 POSTGRES_HOST=db
 NEXTCLOUD_ADMIN_USER=admin
 NEXTCLOUD_ADMIN_PASSWORD=<nextcloud-admin-pwd>
-NEXTCLOUD_TRUSTED_DOMAINS=<hostname>
-HOST=<hostname>
+NEXTCLOUD_TRUSTED_DOMAINS=<your-nextcloud.domain>
+HOST=<your-nextcloud.domain>
 ```
 
 ### `app.env`
 ```bash
-VIRTUAL_HOST=<hostname>
-LETSENCRYPT_HOST=<hostname>
+VIRTUAL_HOST=<your-nextcloud.domain>
+LETSENCRYPT_HOST=<your-nextcloud.domain>
 LETSENCRYPT_EMAIL=<email>
 ```
 
