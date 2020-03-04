@@ -2,6 +2,33 @@
 
 Nextcloud configuration for the raspberry pi 3 B (+) using docker nginx-fpm and local letsencrypt certbot.
 
+## Environment files
+
+### `.env`
+```bash
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=<postgres-pwd>
+POSTGRES_HOST=db
+NEXTCLOUD_ADMIN_USER=admin
+NEXTCLOUD_ADMIN_PASSWORD=<nextcloud-admin-pwd>
+NEXTCLOUD_TRUSTED_DOMAINS=<hostname>
+HOST=<hostname>
+```
+
+### `app.env`
+```bash
+VIRTUAL_HOST=<hostname>
+LETSENCRYPT_HOST=<hostname>
+LETSENCRYPT_EMAIL=<email>
+```
+
+### `db.env`
+```bash
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=<postgres-pwd>
+```
+
 ## Troubleshooting
 
 ### SSL encryption
