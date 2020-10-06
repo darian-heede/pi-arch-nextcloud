@@ -45,8 +45,9 @@ services:
       - DHPARAM_BITS=2048
     volumes:
       - /etc/letsencrypt/live/${HOST}/fullchain.pem:/etc/nginx/certs/${HOST}.fullchain.pem:ro
+      - /etc/letsencrypt/live/${HOST}/fullchain.pem:/etc/nginx/certs/${HOST}.crt:ro
       - /etc/letsencrypt/live/${HOST}/chain.pem:/etc/nginx/certs/${HOST}.chain.pem:ro
-      - /etc/letsencrypt/live/${HOST}/cert.pem:/etc/nginx/certs/${HOST}.crt:ro
+      #- /etc/letsencrypt/live/${HOST}/cert.pem:/etc/nginx/certs/${HOST}.crt:ro
       - /etc/letsencrypt/live/${HOST}/privkey.pem:/etc/nginx/certs/${HOST}.key:ro
       - /etc/nginx/dhparam/dhparam.pem:/etc/nginx/certs/${HOST}.dhparam.pem:ro
       - vhost.d:/etc/nginx/vhost.d
