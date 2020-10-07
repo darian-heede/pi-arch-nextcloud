@@ -3,7 +3,7 @@ version: '3'
 services:
 
   db:
-    image: postgres:alpine
+    image: postgres:12-alpine
     container_name: nextcloud-database
     networks:
       - nextcloud_network

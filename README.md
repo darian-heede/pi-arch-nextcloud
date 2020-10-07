@@ -81,3 +81,28 @@ Add the following lines to the `config.php`:
 ```
 
 After doing this, the client can have access granted.
+
+### Database issue after updating nextcloud major release
+
+After updating the nextcloud container from version 17 to 20 the following error message popped up after running update on the webpage:
+
+> InvalidArgumentException: Column name oc_flow_operations.entity is NotNull, but has empty string or null as default.
+
+The error occured while the database was being updated. It seems there is an issue with the default of column `entity` in table `oc_flow_operations`.
+
+It turns out the column `entity` was missing from the table entirely. Hence, it's necessary to add the column to the table `oc_flow_operations`. The following steps solved the issue:
+
+1. Log into the database container running psql:
+`sudo docker exec -it nextcloud-database psql -U postgres`
+2. Connect to the nextcloud database (should be default):
+`\c postgres`
+3. Check if the column is available:
+`SELECT entity FROM oc_flow_operations;`
+If this command returns
+`ERROR:  column "entity" does not exist`
+4. Add the column to the table
+```sql
+ALTER TABLE oc_flow_operations
+ADD COLUMN entity VARCHAR NOT NULL;
+```
+5. Run the Update on the nextcloud webpage.
