@@ -53,6 +53,26 @@ php occ maintenance:mode --off
 
 
 
+## Upgrade nextcloud version using cli
+
+The following steps upgrade the nextcloud instance to a new stable version
+
+```bash
+# Login to container
+sudo docker exec -it --user=www-data nextcloud-app /bin/sh
+
+# Run updater.phar
+php updater/updater.phar
+
+# Run occ upgrade
+php occ upgrade
+
+# If maintenance mode is still active, turn it off
+php occ maintenance:mode --off
+```
+
+
+
 ## Troubleshooting
 
 ### SSL encryption
@@ -131,3 +151,53 @@ ALTER TABLE oc_flow_operations
 ADD COLUMN entity VARCHAR NOT NULL;
 ```
 5. Run the Update on the nextcloud webpage.
+
+### `crontab` won't run
+
+The `busybox` binary needs stickybit to use crontab (and more) for the non root nextcloud user `www-data`. This is the case if `crontab -l` returns `crontab: must be suid to work properly` when called b y user `www-data`.
+
+```bash
+# Login as root and activate maintenance mode
+sudo docker exec -it nextcloud-app /bin/sh
+php occ maintenance:mode --on
+
+# Check permissions for crontab and busybox
+ls -al /bin/crontab
+ls -al /bin/busybox
+
+# Add stickybit to busybox binary
+chmod u+s /bin/busybox
+
+# Exit root and login as www-data
+exit
+crontab -l
+sudo docker exec -it --user=www-data nextcloud-app /bin/sh
+
+# Deactivate maintenance mode
+php occ maintenance:mode --on
+```
+
+### Updater folder missing
+
+An installation or update has gone awry leaving the crucial `updater` folder missing from the nextcloud root `/var/www/html/`. This leads to a 404 error when trying to update via the admin settings.
+
+```bash
+# Load the current stable nextcloud archive
+cd /tmp
+wget https://download.nextcloud.com/server/releases/nextcloud-20.0.4.zip
+
+# Unpack relevant files
+unzip -j nextcloud-20.0.4.zip nextcloud/updater/*
+
+# Copy files to docker container
+sudo docker cp /tmp/index.php nextcloud-app:/var/www/html/updater/
+sudo docker cp /tmp/updater.phar nextcloud-app:/var/www/html/updater/
+
+# Login as root and set correct permissions
+sudo docker exec -it nextcloud-app /bin/sh
+
+chown -R www-data:www-data /var/www/html/updater/
+```
+
+
+
