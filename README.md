@@ -31,6 +31,28 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=<postgres-pwd>
 ```
 
+
+
+## Basic Maintenance
+
+Log in to nextcloud container with user www-data, activate maintenance mode and perform basic database updates such as adding missing columns and indices. Missing elements can occur after version updates.
+
+```bash
+sudo docker exec -it --user=www-data nextcloud-app /bin/sh
+
+php occ maintenance:mode --on
+
+php occ db:add-missing-columns
+php occ db:add-missing-indices
+
+# Convert identifiers to BIGINT
+php occ db:convert-filecache-bigint
+
+php occ maintenance:mode --off
+```
+
+
+
 ## Troubleshooting
 
 ### SSL encryption
@@ -67,6 +89,9 @@ Granting access send token to `http` endpoint rather than `https` per default, r
 
 ```bash
 sudo docker exec -it nextcloud-app /bin/sh
+# Or as user www-data
+sudo docker exec -it --user=www-data nextcloud-app /bin/sh
+
 vi config/config.php
 ```
 
