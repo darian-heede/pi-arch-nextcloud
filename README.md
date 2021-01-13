@@ -71,6 +71,23 @@ php occ upgrade
 php occ maintenance:mode --off
 ```
 
+### Upgrade docker containers
+
+```bash
+# Stop all running containers
+docker stop $(docker ps -aq)
+
+# Remove stopped containers
+docker rm $(docker ps -aq)
+
+# Remove old images
+docker rmi $(docker images -aq)
+
+# Rebuild and start
+docker-compose up --build --detach
+
+```
+
 
 
 ## Troubleshooting
@@ -108,9 +125,9 @@ sudo openssl dhparam -dsaparam -out /etc/nginx/dhparam/dhparam.pem 4096
 Granting access send token to `http` endpoint rather than `https` per default, resulting in access not being granted. To fix this, the `config/config.php` file must be edited on the `nextcloud-app` container:
 
 ```bash
-sudo docker exec -it nextcloud-app /bin/sh
+docker exec -it nextcloud-app /bin/sh
 # Or as user www-data
-sudo docker exec -it --user=www-data nextcloud-app /bin/sh
+docker exec -it --user=www-data nextcloud-app /bin/sh
 
 vi config/config.php
 ```
@@ -158,7 +175,7 @@ The `busybox` binary needs stickybit to use crontab (and more) for the non root 
 
 ```bash
 # Login as root and activate maintenance mode
-sudo docker exec -it nextcloud-app /bin/sh
+docker exec -it nextcloud-app /bin/sh
 php occ maintenance:mode --on
 
 # Check permissions for crontab and busybox
@@ -171,10 +188,16 @@ chmod u+s /bin/busybox
 # Exit root and login as www-data
 exit
 crontab -l
-sudo docker exec -it --user=www-data nextcloud-app /bin/sh
+docker exec -it --user=www-data nextcloud-app /bin/sh
 
 # Deactivate maintenance mode
 php occ maintenance:mode --on
+```
+
+It is possible that this will still not work as there is no `crond` service in nextcloud container. To adapt to this add the following `crontab` entry on the host running docker
+
+```bash
+sudo bash -c 'echo "*/5 * * * * docker exec --user=www-data nextcloud-app php cron.php" >> /var/spool/cron/root'
 ```
 
 ### Updater folder missing
@@ -190,11 +213,11 @@ wget https://download.nextcloud.com/server/releases/nextcloud-20.0.4.zip
 unzip -j nextcloud-20.0.4.zip nextcloud/updater/*
 
 # Copy files to docker container
-sudo docker cp /tmp/index.php nextcloud-app:/var/www/html/updater/
-sudo docker cp /tmp/updater.phar nextcloud-app:/var/www/html/updater/
+docker cp /tmp/index.php nextcloud-app:/var/www/html/updater/
+docker cp /tmp/updater.phar nextcloud-app:/var/www/html/updater/
 
 # Login as root and set correct permissions
-sudo docker exec -it nextcloud-app /bin/sh
+docker exec -it nextcloud-app /bin/sh
 
 chown -R www-data:www-data /var/www/html/updater/
 ```
